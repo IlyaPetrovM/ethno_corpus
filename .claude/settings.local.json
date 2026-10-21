@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(python -m pytest ethno_corpus/tests/test_file_scanner.py -v)",
+      "Bash(python -m unittest ethno_corpus.tests.test_file_scanner -v)",
+      "Bash(python -m unittest ethno_corpus.tests.test_database -v)",
+      "Bash(python -m unittest ethno_corpus.tests.test_document_analyzer -v)",
+      "Bash(python -m unittest ethno_corpus.tests.test_index_builder -v)",
+      "Bash(python -m unittest ethno_corpus.tests.test_morphology -v)",
+      "Bash(python build.py)",
+      "Bash(python -m PyInstaller build.spec)",
+      "Bash(start dist/ethno_corpus.exe)",
+      "Bash(pip list *)",
+      "Bash(python main.py)",
+      "Bash(python -m unittest discover -s ethno_corpus/tests -p \"test_*.py\" -v)",
+      "Bash(python -m unittest discover -s ethno_corpus/tests -p \"test_*.py\")",
+      "Bash(python -m pytest ethno_corpus/tests/ -v)",
+      "Bash(python -m unittest discover -s ethno_corpus/tests -v)",
+      "Bash(python3)",
+      "Bash(python test_fixes.py)",
+      "Bash(python -m unittest ethno_corpus.tests.test_fixes_verification -v)",
+      "Bash(rm -f debug_search.py)",
+      "Bash(python -m ethno_corpus.tests.debug_search)",
+      "Bash(python -m ethno_corpus.tests.extract_docx_samples)",
+      "Bash(python -m unittest ethno_corpus.tests.test_search_with_real_data -v)",
+      "Bash(pandoc --version)",
+      "Bash(python -m pytest ethno_corpus/tests/test_doc_parsing.py -v)",
+      "Bash(python -m unittest ethno_corpus.tests.test_doc_parsing -v)",
+      "Bash(python -m unittest ethno_corpus.tests.test_doc_parsing.TestRealDataParsing -v)",
+      "Bash(python -m unittest discover ethno_corpus/tests -v)"
+    ]
+  }
+}

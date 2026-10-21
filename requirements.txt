@@ -1,0 +1,7 @@
+PyQt5>=5.15
+python-docx==0.8.11
+whoosh==2.7.4
+python-Levenshtein==0.23.0
+oletools==0.60.1
+doc2docx>=0.2.4
+pywin32>=305
