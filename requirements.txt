@@ -5,3 +5,4 @@ python-Levenshtein==0.23.0
 oletools==0.60.1
 doc2docx>=0.2.4
 pywin32>=305
+hsluv>=5.0.4

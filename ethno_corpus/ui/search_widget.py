@@ -1,5 +1,7 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QListWidget, QListWidgetItem, QLabel
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton, QTextBrowser, QLabel
+from PyQt5.QtCore import Qt, QUrl
+from hsluv import hpluv_to_rgb
+import random
 from ..utils import get_logger
 
 logger = get_logger(__name__)
@@ -11,6 +13,7 @@ class SearchWidget(QWidget):
         self.on_search_callback = None
         self.tree_widget = None
         self.last_expanded_path = None
+        self.search_results = []
 
         layout = QVBoxLayout()
 
@@ -27,12 +30,13 @@ class SearchWidget(QWidget):
 
         # Результаты поиска
         self.results_count_label = QLabel("Результатов: 0")
-        self.results_list = QListWidget()
-        self.results_list.itemClicked.connect(self.on_result_clicked)
+        self.results_browser = QTextBrowser()
+        self.results_browser.setOpenLinks(False)
+        self.results_browser.anchorClicked.connect(self.on_result_clicked)
 
         layout.addLayout(search_layout)
         layout.addWidget(self.results_count_label)
-        layout.addWidget(self.results_list)
+        layout.addWidget(self.results_browser)
 
         self.setLayout(layout)
 
@@ -45,29 +49,55 @@ class SearchWidget(QWidget):
         logger.info(f"Search query: {query}")
         self.on_search_callback(query)
 
+    @staticmethod
+    def _file_color(file_path: str, color_cache: dict) -> str:
+        """Возвращает HEX цвет для файла: одинаковый для одного файла, разный для разных"""
+        if file_path not in color_cache:
+            hue = random.uniform(0, 360)
+            r, g, b = hpluv_to_rgb([hue, 100, 95])
+            color_cache[file_path] = "#{:02x}{:02x}{:02x}".format(
+                int(r * 255), int(g * 255), int(b * 255)
+            )
+        return color_cache[file_path]
+
     def display_results(self, results: list):
-        """Отображает результаты поиска"""
-        self.results_list.clear()
+        """Отображает результаты поиска с подсветкой найденных слов"""
+        self.results_browser.clear()
         self.results_count_label.setText(f"Результатов: {len(results)}")
+        self.search_results = results
+
+        color_cache = {}
+        html_content = '<div style="font-family: Arial; font-size: 10pt;">'
 
         for i, result in enumerate(results):
-            # Форматируем результат для отображения
-            context = result.get("context", "")[:100] + "..."
+            context = result.get("context", "")
+            file_path = result.get("file_path", "")
+            bg_color = self._file_color(file_path, color_cache)
 
-            item = QListWidgetItem(context)
-            item.setData(Qt.ItemDataRole.UserRole, result)
-            self.results_list.addItem(item)
+            html_content += f'<div style="margin-bottom: 4px; padding: 6px; background-color: {bg_color};">'
+            html_content += f'<a href="result_{i}" style="color: #333; text-decoration: none; line-height: 1.5;">{context}</a>'
+            html_content += '</div>'
 
-    def on_result_clicked(self, item: QListWidgetItem):
+        html_content += '</div>'
+        self.results_browser.setHtml(html_content)
+
+    def on_result_clicked(self, url: QUrl):
         """Обработчик клика на результат поиска - открывает документ в дереве"""
         if not self.tree_widget:
             return
 
-        result = item.data(Qt.ItemDataRole.UserRole)
-        if result:
-            file_path = result.get("file_path")
-            if file_path:
-                self.navigate_tree_to_document(file_path)
+        # Парсим номер результата из URL
+        anchor = url.toString()
+        if anchor.startswith("result_"):
+            try:
+                result_idx = int(anchor.split("_")[1])
+                if 0 <= result_idx < len(self.search_results):
+                    result = self.search_results[result_idx]
+                    file_path = result.get("file_path")
+                    if file_path:
+                        self.navigate_tree_to_document(file_path)
+            except (ValueError, IndexError):
+                pass
 
     def navigate_tree_to_document(self, file_path):
         """Открывает документ в дереве: закрывает предыдущую ветку, раскрывает новую"""

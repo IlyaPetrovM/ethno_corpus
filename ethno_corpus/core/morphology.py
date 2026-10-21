@@ -80,10 +80,9 @@ class Morphology:
 
     @staticmethod
     def highlight_word(context: str, word: str) -> str:
-        """Подсвечивает слово в контексте (для вывода)"""
-        # Подсвечиваем как [word]
+        """Подсвечивает слово в контексте HTML красным цветом"""
         pattern = r'\b' + re.escape(word) + r'\b'
-        return re.sub(pattern, f'[{word}]', context, flags=re.IGNORECASE)
+        return re.sub(pattern, f'<span style="color: red;"><b>\\g<0></b></span>', context, flags=re.IGNORECASE)
 
 
 __all__ = ["Morphology"]
