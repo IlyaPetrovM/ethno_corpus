@@ -1,9 +1,10 @@
-from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QTreeWidget, QTreeWidgetItem, QSplitter, QProgressBar, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QTreeWidget, QTreeWidgetItem, QSplitter, QProgressBar, QMessageBox, QFileDialog
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 import subprocess
 import os
 from pathlib import Path
 from ..utils import FileScanner, get_logger
+from ..utils.config import INPUT_DIR as DEFAULT_INPUT_DIR
 from ..core import DocumentAnalyzer, IndexBuilder
 from ..data import DatabaseManager
 from .search_widget import SearchWidget
@@ -60,16 +61,23 @@ class AnalysisWorker(QThread):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, input_dir: str = None):
         super().__init__()
         self.setWindowTitle("Поисковик этнографического корпуса")
         self.setGeometry(100, 100, 1200, 800)
 
         # Компоненты
+        if input_dir:
+            self.current_input_dir = Path(input_dir)
+        else:
+            self.current_input_dir = Path(DEFAULT_INPUT_DIR)
+
         self.scanner = FileScanner()
-        self.documents = self.scanner.scan_documents()
+        self.documents = []  # Пусто по умолчанию, пока пользователь не выберет папку
         self.db = DatabaseManager()
         self.index_builder = IndexBuilder()
+        self.analysis_worker = None
+        self.input_dir_param = input_dir  # Сохранить параметр для позднейшей обработки
 
         # Основной виджет
         main_widget = QWidget()
@@ -80,12 +88,18 @@ class MainWindow(QMainWindow):
         top_layout.setSpacing(10)
         top_layout.setContentsMargins(5, 5, 5, 5)
 
+        self.select_folder_btn = QPushButton("📁 Выбрать папку")
+        self.select_folder_btn.setMaximumWidth(150)
+        self.select_folder_btn.clicked.connect(self.on_select_folder)
+        top_layout.addWidget(self.select_folder_btn)
+
         self.analyze_btn = QPushButton("Анализировать")
         self.analyze_btn.setMaximumWidth(120)
         self.analyze_btn.clicked.connect(self.on_analyze_clicked)
         top_layout.addWidget(self.analyze_btn)
 
-        self.status_label = QLabel(f"Документов: {len(self.documents)}")
+        status_text = f"Папка: {self.current_input_dir.name} | Документов: {len(self.documents)}" if self.documents else "Выберите папку для начала"
+        self.status_label = QLabel(status_text)
         top_layout.addWidget(self.status_label, 1)
 
         self.progress_bar = QProgressBar()
@@ -128,7 +142,10 @@ class MainWindow(QMainWindow):
         content_layout.addWidget(splitter)
         main_widget.setLayout(content_layout)
 
-        self.analysis_worker = None
+        # Если передана папка в параметре, сканируем её
+        if self.input_dir_param:
+            self.reload_documents(self.current_input_dir)
+
         logger.info(f"Loaded {len(self.documents)} documents")
 
     def populate_tree(self):
@@ -223,3 +240,22 @@ class MainWindow(QMainWindow):
         engine = SearchEngine()
         results = engine.search(query)
         self.search_widget.display_results(results)
+
+    def on_select_folder(self):
+        """Открывает диалог выбора папки и пересканирует документы"""
+        folder = QFileDialog.getExistingDirectory(
+            self,
+            "Выберите папку с документами",
+            str(self.current_input_dir)
+        )
+        if folder:
+            self.reload_documents(Path(folder))
+
+    def reload_documents(self, folder_path: Path):
+        """Пересканирует документы из выбранной папки"""
+        self.current_input_dir = folder_path
+        self.documents = self.scanner.scan_documents(folder_path)
+        self.tree.clear()
+        self.populate_tree()
+        self.status_label.setText(f"Папка: {folder_path.name} | Документов: {len(self.documents)}")
+        logger.info(f"Rescanned documents from {folder_path}: {len(self.documents)} found")

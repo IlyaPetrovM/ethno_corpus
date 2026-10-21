@@ -28,7 +28,13 @@
       "Bash(python -m pytest ethno_corpus/tests/test_doc_parsing.py -v)",
       "Bash(python -m unittest ethno_corpus.tests.test_doc_parsing -v)",
       "Bash(python -m unittest ethno_corpus.tests.test_doc_parsing.TestRealDataParsing -v)",
-      "Bash(python -m unittest discover ethno_corpus/tests -v)"
+      "Bash(python -m unittest discover ethno_corpus/tests -v)",
+      "Bash(python -m pytest ethno_corpus/tests/test_highlight_words.py -v -s)",
+      "Bash(python -m unittest ethno_corpus.tests.test_search_highlighting -v)",
+      "Bash(timeout 10 \"c:/Users/i.petrov/dev/ethno_database/dist/ethno_corpus.exe\")",
+      "Bash(python -m pytest ethno_corpus/tests/ -v --tb=short)",
+      "Bash(PYTHONIOENCODING=utf-8 python build.py)",
+      "Bash(timeout 10 \"./ethno_corpus.exe\")"
     ]
   }
 }

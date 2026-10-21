@@ -15,7 +15,14 @@ logger = get_logger(__name__)
 def main():
     logger.info("Starting application...")
     app = QApplication(sys.argv)
-    window = MainWindow()
+
+    # Получаем папку из параметра командной строки (если передана)
+    input_dir = None
+    if len(sys.argv) > 1:
+        input_dir = sys.argv[1]
+        logger.info(f"Input folder from command line: {input_dir}")
+
+    window = MainWindow(input_dir=input_dir)
     window.show()
     sys.exit(app.exec())
 

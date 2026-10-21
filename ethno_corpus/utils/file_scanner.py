@@ -6,17 +6,19 @@ from .config import INPUT_DIR, SUPPORTED_FORMATS
 
 class FileScanner:
     @staticmethod
-    def scan_documents() -> List[Dict[str, any]]:
-        """Сканирует папку input и возвращает список документов с метаданными"""
+    def scan_documents(input_dir: Path = None) -> List[Dict[str, any]]:
+        """Сканирует папку и возвращает список документов с метаданными"""
+        if input_dir is None:
+            input_dir = INPUT_DIR
         documents = []
 
-        for root, dirs, files in os.walk(INPUT_DIR):
+        for root, dirs, files in os.walk(input_dir):
             for file in files:
                 if Path(file).suffix.lower() in SUPPORTED_FORMATS:
                     file_path = Path(root) / file
 
                     # Извлечение года и места из пути
-                    parts = file_path.relative_to(INPUT_DIR).parts
+                    parts = file_path.relative_to(input_dir).parts
                     location = None
                     year = None
 
