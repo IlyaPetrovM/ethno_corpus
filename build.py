@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
 Сборка exe для Windows 7+
 
@@ -12,6 +13,11 @@ import subprocess
 import sys
 import shutil
 from pathlib import Path
+import io
+
+# Исправляем кодировку вывода на Windows
+if sys.platform == 'win32':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 def main():
     print("=" * 60)
