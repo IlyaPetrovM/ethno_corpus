@@ -18,3 +18,5 @@ ANALYST_FINDINGS.md
 build/*
 dist/*
 ethno_corpus_temp
+.gitignore
+.claude/
