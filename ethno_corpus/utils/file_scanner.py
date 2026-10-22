@@ -10,6 +10,8 @@ class FileScanner:
         """Сканирует папку и возвращает список документов с метаданными"""
         if input_dir is None:
             input_dir = INPUT_DIR
+
+        input_dir = Path(input_dir)
         documents = []
 
         for root, dirs, files in os.walk(input_dir):
@@ -36,7 +38,7 @@ class FileScanner:
                         "file_name": file,
                         "location": location,
                         "year": year,
-                        "rel_path": str(file_path.relative_to(INPUT_DIR))
+                        "rel_path": str(file_path.relative_to(input_dir))
                     })
 
         return sorted(documents, key=lambda x: (x.get("year") or 0, x.get("location") or ""))
